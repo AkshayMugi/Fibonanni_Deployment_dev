@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3 
+  selector: 
+    matchLabels:
+      component: server
+  template:
+    metadata:
+      labels:
+        component: web
+    spec:
+      containers:
+        -  name: server
+           image: stephengrider/multi-server
+           ports:
+            - containerPort: 5000
+           env:
+             - name: REDIS_HOST   
+               value: redis-cluster-ip-service
+             - name: REDIS_PORT
+               value: '6379'
+             - name: PGUSER
+               value: postgres 
+             - name: PGHOST
+               value: postgres-cluster-ip-service
+             - name: PGPORT   
+               value: '5432' 
+             - name: PGDATABASE
+               value: posgtres
+             - name: POSTGRES_PASSWORD
+               valueFROM:
+                 secretKeyRef:
+                    name: pgpassword
+                    key: PGPASSWORD
+                    # The key above is from the key-value pair which is encoded inside the imperative command when we create the secret using the below given command.
+   # to add the pg password as an environment variable we use an imperative command to create a secret a rather than creating a config file..
+   # kubectl create secret generic pgpassword --from-literal PGPASSWORD="password123"
